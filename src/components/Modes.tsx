@@ -6,19 +6,23 @@ type Mode =
   | `add-rectangle`
   | `add-ellipse`
   | `add-text`
-  | "add-line";
+  | "add-line"
+  | "add-arrow"
+  | "clear-shapes";
 
 type ButtonData = {
   mode: Mode;
   icon: JSX.Element;
   label: string;
+  customAction?: () => void;
 };
 
 type NavBarProps = {
   setMode: (mode: Mode) => void;
+  clearShapes: () => void;
 };
 
-export default function Modes({ setMode }: NavBarProps) {
+export default function Modes({ setMode, clearShapes }: NavBarProps) {
   const buttons: ButtonData[] = [
     {
       mode: "move",
@@ -147,22 +151,89 @@ export default function Modes({ setMode }: NavBarProps) {
         </svg>
       ),
     },
+    {
+      mode: "add-arrow",
+      label: "Arrow",
+      icon: (
+        <svg
+          xmlns="http://www.w3.org/2000/svg"
+          width="24"
+          height="24"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="2"
+          stroke-linecap="round"
+          stroke-linejoin="round"
+          class="lucide lucide-move-down-left-icon lucide-move-down-left"
+        >
+          <path d="M11 19H5V13" />
+          <path d="M19 5L5 19" />
+        </svg>
+      ),
+    },
+    {
+      mode: "clear-shapes",
+      label: "Clear Shapes",
+      customAction: () =>
+        (
+          document.getElementById("delete_modal")! as HTMLDialogElement
+        ).showModal(),
+      icon: (
+        <svg
+          xmlns="http://www.w3.org/2000/svg"
+          width="24"
+          height="24"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="2"
+          stroke-linecap="round"
+          stroke-linejoin="round"
+          class="lucide lucide-trash2-icon lucide-trash-2"
+        >
+          <path d="M3 6h18" />
+          <path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6" />
+          <path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2" />
+          <line x1="10" x2="10" y1="11" y2="17" />
+          <line x1="14" x2="14" y1="11" y2="17" />
+        </svg>
+      ),
+    },
   ];
 
   return (
-    <div class="card bg-base-100 w-min border border-base-300 h-min mt-2">
-      <div class="card-body flex flex-row gap-3">
-        {buttons.map(({ mode, icon, label }) => (
-          <button
-            class="btn scale-110 btn-square rounded-lg"
-            onClick={() => setMode(mode)}
-            title={label}
-            aria-label={label}
-          >
-            {icon}
-          </button>
-        ))}
+    <>
+      <div class="card bg-base-100 w-min border border-base-300 h-min mt-2">
+        <div class="card-body flex flex-row gap-3">
+          {buttons.map(({ mode, icon, label, customAction }) => (
+            <button
+              class="btn scale-110 btn-square rounded-lg"
+              onClick={() => (customAction ? customAction() : setMode(mode))}
+              title={label}
+              aria-label={label}
+            >
+              {icon}
+            </button>
+          ))}
+        </div>
       </div>
-    </div>
+      <dialog id="delete_modal" class="modal">
+        <div class="modal-box">
+          <h3 class="font-bold mb-2 text-xl">
+            You sure you want to delete all shapes?
+          </h3>
+          <p>This will clear the whole canvas.</p>
+          <div class="modal-action">
+            <form method="dialog" class="flex gap-1">
+              <button class="btn">Cancel</button>
+              <button class="btn btn-error" onClick={clearShapes}>
+                Confirm
+              </button>
+            </form>
+          </div>
+        </div>
+      </dialog>
+    </>
   );
 }
